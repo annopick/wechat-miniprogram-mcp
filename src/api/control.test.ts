@@ -25,10 +25,25 @@ describe('Control API', () => {
       ok: false,
       status: 500,
       statusText: 'Internal Server Error',
+      text: async () => '{"code":19,"message":"Error: project.config.json not found"}',
     })
     global.fetch = mockFetch
 
-    await expect(callControlApi('GET', '/test')).rejects.toThrow('HTTP 500: Internal Server Error')
+    await expect(callControlApi('GET', '/test')).rejects.toThrow(
+      'HTTP 500: Internal Server Error - {"code":19,"message":"Error: project.config.json not found"}'
+    )
+  })
+
+  it('should handle HTTP errors with empty body', async () => {
+    const mockFetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 404,
+      statusText: 'Not Found',
+      text: async () => '',
+    })
+    global.fetch = mockFetch
+
+    await expect(callControlApi('GET', '/test')).rejects.toThrow('HTTP 404: Not Found')
   })
 
   it('should handle timeout errors', async () => {
