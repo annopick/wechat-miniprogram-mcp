@@ -1,6 +1,6 @@
 {
   "name": "wechat-miniprogram-mcp",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "MCP Server for WeChat DevTools - automate Mini Program development via AI",
   "type": "module",
   "main": "dist/index.js",
@@ -12,7 +12,7 @@
     "README.md"
   ],
   "scripts": {
-    "build": "tsup",
+    "build": "tsup && node scripts/check-shebang.js",
     "dev": "tsup --watch",
     "test": "vitest run",
     "test:watch": "vitest",

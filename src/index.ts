@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 import { startServer } from './server.js'
 import { initControlApi } from './api/control.js'
 import { logger } from './logger.js'
