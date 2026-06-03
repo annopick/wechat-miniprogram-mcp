@@ -1,4 +1,4 @@
-import { callControlApi, type ControlApiResponse } from '../../api/control.js'
+import { callControlApi, getDefaultProject, type ControlApiResponse } from '../../api/control.js'
 
 export interface ControlTool {
   name: string
@@ -15,6 +15,25 @@ function formatMcpContent(response: ControlApiResponse) {
       return { content: [{ type: 'text' as const, text: JSON.stringify(response.data, null, 2) }] }
     case 'binary':
       return { content: [{ type: 'image' as const, data: response.data, mimeType: response.mimeType }] }
+  }
+}
+
+const PROJECT_DESC = 'Path to the Mini Program project. Falls back to WECHAT_PROJECT_PATH env var if not provided.'
+
+function resolveProject(args: Record<string, unknown>): Record<string, unknown> {
+  const params = { ...args }
+  if (!params.project) {
+    const defaultProject = getDefaultProject()
+    if (defaultProject) {
+      params.project = defaultProject
+    }
+  }
+  return params
+}
+
+function requireProject(params: Record<string, unknown>): void {
+  if (!params.project) {
+    throw new Error('project path is required. Provide it as an argument or set WECHAT_PROJECT_PATH env var.')
   }
 }
 
@@ -42,14 +61,12 @@ export const controlTools: ControlTool[] = [
       required: [],
     },
     handler: async (args) => {
-      // Default to base64 for MCP compatibility (avoids raw binary issues)
       const params: Record<string, unknown> = { ...args }
       if (!params['qr-format']) {
         params['qr-format'] = 'base64'
       }
       const response = await callControlApi('GET', '/v2/login', params)
 
-      // When base64 format is used, the API returns base64 text which we convert to MCP image
       if (response.type === 'text' && params['qr-format'] === 'base64') {
         return {
           content: [{
@@ -84,7 +101,7 @@ export const controlTools: ControlTool[] = [
       properties: {
         project: {
           type: 'string',
-          description: 'Path to the Mini Program project',
+          description: PROJECT_DESC,
         },
         'qr-format': {
           type: 'string',
@@ -104,17 +121,16 @@ export const controlTools: ControlTool[] = [
           description: 'Custom compile condition as JSON string, e.g. {"pathName":"pages/index/index","query":"a=1"}',
         },
       },
-      required: ['project'],
+      required: [],
     },
     handler: async (args) => {
-      // Default to base64 for MCP compatibility (avoids raw binary issues)
-      const params: Record<string, unknown> = { ...args }
+      const params = resolveProject(args)
+      requireProject(params)
       if (!params['qr-format']) {
         params['qr-format'] = 'base64'
       }
       const response = await callControlApi('GET', '/v2/preview', params)
 
-      // When base64 format is used, the API returns base64 text which we convert to MCP image
       if (response.type === 'text' && params['qr-format'] === 'base64') {
         return {
           content: [{
@@ -136,7 +152,7 @@ export const controlTools: ControlTool[] = [
       properties: {
         project: {
           type: 'string',
-          description: 'Path to the Mini Program project',
+          description: PROJECT_DESC,
         },
         version: {
           type: 'string',
@@ -151,10 +167,12 @@ export const controlTools: ControlTool[] = [
           description: 'File path to write upload info JSON (code package size, subpackage info)',
         },
       },
-      required: ['project', 'version'],
+      required: ['version'],
     },
     handler: async (args) => {
-      const response = await callControlApi('GET', '/v2/upload', args)
+      const params = resolveProject(args)
+      requireProject(params)
+      const response = await callControlApi('GET', '/v2/upload', params)
       return formatMcpContent(response)
     },
   },
@@ -166,17 +184,19 @@ export const controlTools: ControlTool[] = [
       properties: {
         project: {
           type: 'string',
-          description: 'Path to the Mini Program project',
+          description: PROJECT_DESC,
         },
         'info-output': {
           type: 'string',
           description: 'File path to write preview info JSON',
         },
       },
-      required: ['project'],
+      required: [],
     },
     handler: async (args) => {
-      const response = await callControlApi('GET', '/v2/autopreview', args)
+      const params = resolveProject(args)
+      requireProject(params)
+      const response = await callControlApi('GET', '/v2/autopreview', params)
       return formatMcpContent(response)
     },
   },
@@ -188,7 +208,7 @@ export const controlTools: ControlTool[] = [
       properties: {
         project: {
           type: 'string',
-          description: 'Path to the Mini Program project',
+          description: PROJECT_DESC,
         },
         'compile-type': {
           type: 'string',
@@ -196,10 +216,12 @@ export const controlTools: ControlTool[] = [
           description: 'Compile type: miniprogram (default) or plugin',
         },
       },
-      required: ['project'],
+      required: [],
     },
     handler: async (args) => {
-      const response = await callControlApi('GET', '/v2/buildnpm', args)
+      const params = resolveProject(args)
+      requireProject(params)
+      const response = await callControlApi('GET', '/v2/buildnpm', params)
       return formatMcpContent(response)
     },
   },
@@ -211,13 +233,14 @@ export const controlTools: ControlTool[] = [
       properties: {
         project: {
           type: 'string',
-          description: 'Path to the Mini Program project to open',
+          description: PROJECT_DESC,
         },
       },
       required: [],
     },
     handler: async (args) => {
-      const response = await callControlApi('GET', '/v2/open', args)
+      const params = resolveProject(args)
+      const response = await callControlApi('GET', '/v2/open', params)
       return formatMcpContent(response)
     },
   },
@@ -229,13 +252,15 @@ export const controlTools: ControlTool[] = [
       properties: {
         project: {
           type: 'string',
-          description: 'Path to the Mini Program project to close',
+          description: PROJECT_DESC,
         },
       },
-      required: ['project'],
+      required: [],
     },
     handler: async (args) => {
-      const response = await callControlApi('GET', '/v2/close', args)
+      const params = resolveProject(args)
+      requireProject(params)
+      const response = await callControlApi('GET', '/v2/close', params)
       return formatMcpContent(response)
     },
   },
@@ -260,13 +285,15 @@ export const controlTools: ControlTool[] = [
       properties: {
         project: {
           type: 'string',
-          description: 'Path to the Mini Program project',
+          description: PROJECT_DESC,
         },
       },
-      required: ['project'],
+      required: [],
     },
     handler: async (args) => {
-      const response = await callControlApi('GET', '/v2/resetfileutils', args)
+      const params = resolveProject(args)
+      requireProject(params)
+      const response = await callControlApi('GET', '/v2/resetfileutils', params)
       return formatMcpContent(response)
     },
   },
@@ -278,7 +305,7 @@ export const controlTools: ControlTool[] = [
       properties: {
         project: {
           type: 'string',
-          description: 'Path to the Mini Program project',
+          description: PROJECT_DESC,
         },
         clean: {
           type: 'string',
@@ -286,10 +313,12 @@ export const controlTools: ControlTool[] = [
           description: 'Cache type to clear: storage, file, session, auth, network, compile, or all',
         },
       },
-      required: ['project', 'clean'],
+      required: ['clean'],
     },
     handler: async (args) => {
-      const response = await callControlApi('GET', '/v2/cleancache', args)
+      const params = resolveProject(args)
+      requireProject(params)
+      const response = await callControlApi('GET', '/v2/cleancache', params)
       return formatMcpContent(response)
     },
   },

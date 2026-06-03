@@ -7,6 +7,50 @@ describe('Control Tools', () => {
     initControlApi({ port: 12345, timeout: 5 })
   })
 
+  it('should use default project path when project arg is not provided', async () => {
+    initControlApi({ port: 12345, timeout: 5, projectPath: '/default/project' })
+    const mockFetch = vi.fn().mockResolvedValue({
+      ok: true,
+      headers: new Headers({ 'content-type': 'text/plain' }),
+      text: async () => 'OK',
+    })
+    global.fetch = mockFetch
+
+    const previewTool = controlTools.find((t) => t.name === 'wechat_control_preview')!
+    await previewTool.handler({})
+
+    const calledUrl = mockFetch.mock.calls[0][0] as string
+    expect(calledUrl).toContain('project=%2Fdefault%2Fproject')
+  })
+
+  it('should prefer explicit project arg over default path', async () => {
+    initControlApi({ port: 12345, timeout: 5, projectPath: '/default/project' })
+    const mockFetch = vi.fn().mockResolvedValue({
+      ok: true,
+      headers: new Headers({ 'content-type': 'text/plain' }),
+      text: async () => 'OK',
+    })
+    global.fetch = mockFetch
+
+    const openTool = controlTools.find((t) => t.name === 'wechat_control_open')!
+    await openTool.handler({ project: '/explicit/project' })
+
+    const calledUrl = mockFetch.mock.calls[0][0] as string
+    expect(calledUrl).toContain('project=%2Fexplicit%2Fproject')
+    expect(calledUrl).not.toContain('default')
+  })
+
+  it('should throw error when project is required but neither arg nor default provided', async () => {
+    initControlApi({ port: 12345, timeout: 5 })
+    const mockFetch = vi.fn()
+    global.fetch = mockFetch
+
+    const previewTool = controlTools.find((t) => t.name === 'wechat_control_preview')!
+    await expect(previewTool.handler({})).rejects.toThrow(
+      'project path is required. Provide it as an argument or set WECHAT_PROJECT_PATH env var.'
+    )
+  })
+
   it('should export control tools', () => {
     expect(controlTools).toBeDefined()
     expect(Array.isArray(controlTools)).toBe(true)
@@ -117,6 +161,7 @@ describe('Control Tools', () => {
 
   it('should handle raw binary image response from preview', async () => {
     // When user explicitly requests qr-format=image, the API returns binary PNG
+    initControlApi({ port: 12345, timeout: 5 })
     const pngBytes = new Uint8Array([0x89, 0x50, 0x4e, 0x47])
     const mockFetch = vi.fn().mockResolvedValue({
       ok: true,

@@ -1,6 +1,7 @@
 export interface ControlApiConfig {
   port: number
   timeout: number
+  projectPath?: string
 }
 
 export type ControlApiResponse =
@@ -12,6 +13,10 @@ let config: ControlApiConfig | null = null
 
 export function initControlApi(userConfig: ControlApiConfig) {
   config = userConfig
+}
+
+export function getDefaultProject(): string | undefined {
+  return config?.projectPath
 }
 
 function isBinaryContentType(contentType: string): boolean {
