@@ -1,0 +1,47 @@
+{
+  "name": "wechat-miniprogram-mcp",
+  "version": "0.1.0",
+  "description": "MCP Server for WeChat DevTools - automate Mini Program development via AI",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "wechat-miniprogram-mcp": "dist/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "lint": "tsc --noEmit"
+  },
+  "keywords": [
+    "mcp",
+    "wechat",
+    "miniprogram",
+    "devtools"
+  ],
+  "author": "annopick",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/annopick/wechat-miniprogram-mcp"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.4",
+    "miniprogram-automator": "^0.12.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.0",
+    "vitest": "^2.1.8"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
