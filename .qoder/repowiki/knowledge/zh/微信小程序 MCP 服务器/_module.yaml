@@ -1,0 +1,19 @@
+schema_version: 1
+module_path: ""
+title: 微信小程序 MCP 服务器
+scope:
+    - .github/workflows/
+    - docs/
+    - scripts/
+    - src/
+    - .gitignore
+    - AGENTS.md
+    - README.md
+    - package-lock.json
+    - package.json
+    - tsconfig.json
+    - tsup.config.ts
+    - vitest.config.ts
+source_files: []
+depends_on: []
+related_to: []

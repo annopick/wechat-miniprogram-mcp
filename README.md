@@ -14,16 +14,19 @@ npm install -g wechat-miniprogram-mcp
 
 | 变量名 | 说明 | 必填 |
 |--------|------|------|
-| `WECHAT_DEVTOOLS_PORT` | 微信开发者工具 HTTP 服务端口 | 是 |
-| `WECHAT_DEVTOOLS_CLI_PATH` | 微信开发者工具 CLI 路径 | 否（自动化 API 需要） |
-| `WECHAT_PROJECT_PATH` | 小程序项目路径 | 否（自动化 API 需要） |
+| `WECHAT_DEVTOOLS_PORT` | 微信开发者工具 HTTP 服务端口（控制 API 使用） | 控制 API 需要 |
+| `WECHAT_DEVTOOLS_CLI_PATH` | 微信开发者工具 CLI 路径 | 否（不填则使用平台默认路径） |
+| `WECHAT_PROJECT_PATH` | 小程序项目绝对路径 | 自动化 API 必填 |
 | `LOG_LEVEL` | 日志级别 (DEBUG/INFO/ERROR) | 否，默认 INFO |
+
+> **注意**：至少需要配置 `WECHAT_DEVTOOLS_PORT` 或 `WECHAT_DEVTOOLS_CLI_PATH` 其中之一。自动化 API 使用 `automator.launch()` 启动项目，需要 `WECHAT_PROJECT_PATH`。
 
 ### 微信开发者工具设置
 
 1. 打开微信开发者工具
-2. 设置 -> 安全 -> 开启服务端口
-3. 记录端口号（默认随机分配）
+2. 设置 -> 安全 -> 开启服务端口（控制 API 需要）
+3. 设置 -> 安全 -> 开启 CLI/HTTP 调用功能（自动化 API 需要）
+4. 记录端口号（默认随机分配）
 
 ## 使用
 
@@ -62,15 +65,40 @@ npm install -g wechat-miniprogram-mcp
 
 ### 自动化 API (wechat_auto_*)
 
-- `wechat_auto_connect` - 连接自动化工具
-- `wechat_auto_disconnect` - 断开连接
-- `wechat_auto_navigate` - 页面导航
-- `wechat_auto_get_page_data` - 获取页面数据
-- `wechat_auto_set_page_data` - 设置页面数据
-- `wechat_auto_select_component` - 选择组件
-- `wechat_auto_tap` - 点击组件
-- `wechat_auto_screenshot` - 截图
-- `wechat_auto_set_simulator_size` - 设置模拟器尺寸
+#### 会话管理
+- `wechat_auto_connect` - 启动/断开/关闭自动化会话（connect, disconnect, close, remote），支持 ticket 和 account 参数
+
+#### 页面导航
+- `wechat_auto_navigate` - 页面导航（navigateTo, redirectTo, navigateBack, reLaunch, switchTab）
+
+#### 页面操作
+- `wechat_auto_page_info` - 获取页面信息（currentPage, pageStack, systemInfo, size, scrollTop, pageScrollTo）
+- `wechat_auto_page_data` - 页面数据读写（data, setData）
+- `wechat_auto_page_query` - 页面元素查询与等待（$, $$, waitFor）
+- `wechat_auto_page_call_method` - 调用页面方法（callMethod）
+
+#### wx 方法
+- `wechat_auto_call_wx_method` - 调用 wx 对象方法（callWxMethod, callPluginWxMethod）
+- `wechat_auto_mock_wx_method` - Mock/恢复 wx 方法（mockWxMethod, restoreWxMethod 及插件版本）
+
+#### 代码执行
+- `wechat_auto_evaluate` - 在 AppService 中执行代码片段
+
+#### 截图
+- `wechat_auto_screenshot` - 对当前页面截图
+
+#### 元素操作
+- `wechat_auto_element_info` - 获取元素信息（text, value, attribute, property, style, wxml, outerWxml, size, offset）
+- `wechat_auto_element_action` - 元素交互（tap, longpress, input, trigger）
+- `wechat_auto_element_touch` - 触摸事件（touchstart, touchmove, touchend）
+- `wechat_auto_element_scroll` - 滚动操作（scrollTo, scrollWidth, scrollHeight）
+- `wechat_auto_element_special` - 特殊组件操作（swipeTo, moveTo, slideTo）
+- `wechat_auto_element_data` - 组件数据与方法（data, setData, callMethod, callContextMethod）
+
+#### 工具管理
+- `wechat_auto_ticket` - 登录票据管理（getTicket, setTicket, refreshTicket）
+- `wechat_auto_test_accounts` - 获取多账号调试用户列表
+- `wechat_auto_stop_audits` - 停止体验评分并获取报告
 
 ## 开发
 
